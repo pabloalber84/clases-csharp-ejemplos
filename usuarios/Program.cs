@@ -19,9 +19,14 @@ namespace usuarios
     }
     class Program
     {
+        static Usuario[] database;
         static void Main(string[] args)
         {
-            Console.WriteLine("Hola mundo!");
+            Console.Title = "Base de datos estatica de Usuarios";
+            Console.WriteLine("Bienvenido a ejemplo de base de datos estatica usando clases.");
+            Console.WriteLine("¿Cuantos usuarios tendra su base de datos?");
+            int size = int.Parse(Console.ReadLine());
+            database = new Usuario[size];
         }
     }
 }
