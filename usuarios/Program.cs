@@ -12,7 +12,8 @@ namespace usuarios
         public string apellido_m;
         public int edad;
         // Constructor
-        public Usuario() {
+        public Usuario()
+        {
             // Generar ID automaticamente al crear objeto
             id = System.Guid.NewGuid().ToString();
         }
