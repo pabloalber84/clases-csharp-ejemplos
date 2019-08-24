@@ -23,7 +23,7 @@ namespace usuarios
         static Usuario[] database;
         static void Main(string[] args)
         {
-            Console.Title = "Base de datos estatica de Usuarios";
+            Console.Title = "DB Usuarios > Bienvenida";
             Console.WriteLine("Bienvenido a ejemplo de base de datos estatica usando clases.");
             Console.WriteLine("¿Cuantos usuarios tendra su base de datos?");
             int size = int.Parse(Console.ReadLine());
@@ -39,6 +39,7 @@ namespace usuarios
 		*/
         static void IngresarDatosDB()
         {
+            Console.Title = "DB Usuarios > Generar Usuarios";
             for(int i = 0; i < database.Length; i++)
             {
                 Usuario base_usuario = new Usuario();
@@ -87,6 +88,7 @@ namespace usuarios
 		*/
         static void MenuOpciones()
         {
+            Console.Title = "DB Usuarios > Inicio";
             // Referencia para salto de codigo
             BackMenu:
             Console.WriteLine("|--------------------------------------|");
@@ -103,22 +105,127 @@ namespace usuarios
             switch(opcion)
             {
                 case 1:
-                    break;
+                    BuscarUsuario();
+                    goto BackMenu;
                 case 2:
-                    break;
+                    goto BackMenu;
                 case 3:
-                    break;
+                    goto BackMenu;
                 case 4:
-                    break;
+                    goto BackMenu;
                 case 5:
                     Environment.Exit(1);
                     break;
                 default:
                     Console.Clear();
                     Console.WriteLine("Opción invalida.");
-                    // Salto de codigo a la referencia "BackMenu"
                     goto BackMenu;
             }
+        }
+		/*
+		 * Procedimiento BuscarUsuario()
+         *
+         * Busca un usuario para modificar
+         *
+		*/
+        static void BuscarUsuario()
+        {
+            Console.Title = "Busqueda de usuarios";
+            // Referencia para salto de codigo
+            BackMenu:
+            Console.WriteLine("|--------------------------------------|");
+            Console.WriteLine("|-          MENU DE OPCIONES          -|");
+            Console.WriteLine("|-    Ingrese el tipo de búsqueda:    -|");
+            Console.WriteLine("|--------------------------------------|");
+            Console.WriteLine("| 1.- Buscar por ID                   -|");
+            Console.WriteLine("| 2.- Buscar por Usuario              -|");
+            Console.WriteLine("| 3.- Regresar                        -|");
+            Console.WriteLine("|--------------------------------------|");
+            int opcion = int.Parse(Console.ReadLine());
+            switch(opcion)
+            {
+                case 1:
+                    if(BuscarPorID())
+                        break;
+                    else
+                    {
+                        Console.Clear();
+                        Console.WriteLine("No se encontro resultados.");
+                        goto BackMenu;
+                    }
+                case 2:
+                    if(BuscarPorUsuario())
+                        break;
+                    else
+                    {
+                        Console.Clear();
+                        Console.WriteLine("No se encontro resultados.");
+                        goto BackMenu;
+                    }
+                case 3: break;
+                default:
+                    Console.Clear();
+                    Console.WriteLine("Opción invalida.");
+                    goto BackMenu;
+            }
+            // Funciones locales
+            bool BuscarPorID()
+            {
+                Console.Clear();
+                Console.Write("Ingrese el ID: ");
+                string id = Console.ReadLine();
+                int i = BuscarUsuario(1, id);
+                if(i == -1)
+                    return false;
+                Console.WriteLine("Usuario con ID '{0}' fue encontrado:", id);
+                Console.WriteLine("|----------------------------------------------------|");
+                Console.WriteLine("| ID         {0}", database[i].id);
+                Console.WriteLine("| Usuario    {0}", database[i].usuario);
+                Console.WriteLine("| Nombre     {0} {1} {3}", database[i].usuario, database[i].nombres, database[i].apellido_p, database[i].apellido_m);
+                Console.WriteLine("| Edad       {0} años", database[i].edad);
+                Console.WriteLine("|----------------------------------------------------|");
+                return true;
+            }
+            bool BuscarPorUsuario()
+            {
+                Console.Clear();
+                Console.Write("Ingrese el usuario: ");
+                string usuario = Console.ReadLine();
+                int i = BuscarUsuario(2, usuario);
+                if(i == -1)
+                    return false;
+                Console.WriteLine("Usuario '{0}' fue encontrado:", usuario);
+                Console.WriteLine("|----------------------------------------------------|");
+                Console.WriteLine("| ID         {0}", database[i].id);
+                Console.WriteLine("| Usuario    {0}", database[i].usuario);
+                Console.WriteLine("| Nombre     {0} {1} {3}", database[i].usuario, database[i].nombres, database[i].apellido_p, database[i].apellido_m);
+                Console.WriteLine("| Edad       {0} años", database[i].edad);
+                Console.WriteLine("|----------------------------------------------------|");
+                return true;
+            }
+            Continuar(true);
+        }
+        /*
+         * Función int BuscarUsuario(int tipo, string dato)
+         *
+         * Busca el usuario y retornar el index/indice de la base de datos.
+         *
+         * PARAMETROS:
+         *            int tipo:    Tipo de busqueda:
+         *                              (1.- Por ID)
+         *                              (2.- Por nombre de usuario)
+         *            string dato:    El dato a buscar.
+         *
+        */
+        static int BuscarUsuario(int tipo, string dato)
+        {
+            for(int i = 0; i < database.Length; i++)
+            {
+                if ((tipo == 1 && database[i].id.ToLower().Contains(dato.ToLower()) == true) ||
+                    (tipo == 2 && database[i].usuario.ToLower().Contains(dato.ToLower()) == true))
+                    return i;
+            }
+            return -1;
         }
     }
 }
