@@ -109,12 +109,14 @@ namespace usuarios
             Console.WriteLine("| 5.- Salir                           -|");
             Console.WriteLine("|--------------------------------------|");
             int opcion = int.Parse(Console.ReadLine());
+            Console.Clear();
             switch(opcion)
             {
                 case 1:
                     BuscarUsuario();
                     goto BackMenu;
                 case 2:
+                    CrearUsuario();
                     goto BackMenu;
                 case 3:
                     goto BackMenu;
@@ -124,7 +126,6 @@ namespace usuarios
                     Environment.Exit(1);
                     break;
                 default:
-                    Console.Clear();
                     Console.WriteLine("Opción invalida.");
                     goto BackMenu;
             }
@@ -233,6 +234,50 @@ namespace usuarios
                     return i;
             }
             return -1;
+        }
+		/*
+		 * Procedimiento CrearUsuario()
+         *
+         * Crea un nuevo usuario hasta el final de la base de datos
+         *
+		*/
+        static void CrearUsuario()
+        {
+            Console.Title = "DB Usuarios > Crear nuevo usuario";
+            Usuario base_usuario = new Usuario();
+            Console.WriteLine("|----------------------------------------|");
+            BadUsuario:
+            Console.Write("Ingrese el usuario: ");
+            base_usuario.usuario = Console.ReadLine();
+            if(BuscarUsuario(2, base_usuario.usuario) != -1)
+            {
+                Console.WriteLine("ERROR: ESE USUARIO YA EXISTE.");
+                goto BadUsuario;
+            }
+            Console.Write("Ingrese la contraseña: ");
+            base_usuario.clave = Console.ReadLine();
+            Console.Write("Ingrese los nombres: ");
+            base_usuario.nombres = Console.ReadLine();
+            Console.Write("Ingrese el apellido paterno: ");
+            base_usuario.apellido_p = Console.ReadLine();
+            Console.Write("Ingrese el apellido materno: ");
+            base_usuario.apellido_m = Console.ReadLine();
+            Console.Write("Ingrese la edad: ");
+            base_usuario.edad = int.Parse(Console.ReadLine());
+            // Respalda la base de datos
+            Usuario[] backup = database;
+            // Guarda la cantidad de usuarios registrados
+            int len = backup.Length;
+            // Genera de nuevo la variable database con un nuevo tamaño (Recordar que len es el tamaño +1, porque empieza de 0 un array)
+            database = new Usuario[len];
+            // Guarda la base de datos de acuerdo al respaldo
+            for(int i = 0; i < len; i++)
+                database[i] = backup[i];
+            // Agrega al final el nuevo usuario
+            database[len] = base_usuario;
+            Console.WriteLine("\n Usuario '{0}' se ha generado con el ID: {1}", base_usuario.usuario, base_usuario.id);
+            Console.WriteLine("|----------------------------------------|");
+            Continuar(true);
         }
     }
 }
