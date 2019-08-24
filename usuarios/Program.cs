@@ -3,20 +3,31 @@ using System.Reflection;
 
 namespace usuarios
 {
-    class Usuario
+    // Clonable para clonar la DB
+    class Usuario : ICloneable
     {
-        public string id;
-        public string usuario;
-        public string clave;
-        public string nombres;
-        public string apellido_p;
-        public string apellido_m;
-        public int edad;
+        public string id {get; set;}
+        public string usuario {get; set;}
+        public string clave {get; set;}
+        public string nombres {get; set;}
+        public string apellido_p {get; set;}
+        public string apellido_m {get; set;}
+        public int edad {get; set;}
         // Constructor
         public Usuario()
         {
             // Generar ID automaticamente al crear objeto
             id = System.Guid.NewGuid().ToString();
+        }
+        // Referencia de uso interno para localizar propiedades, usado para verificar y cambiar el valor de una propiedad (Creditos: https://stackoverflow.com/a/49133964)
+        public object this[string propertyName]
+        {
+            get { return this.GetType().GetProperty(propertyName)?.GetValue(this, null); }
+            set { this.GetType().GetProperty(propertyName)?.SetValue(this, value, null); }
+        }
+        public object Clone()
+        {
+            return this.MemberwiseClone();
         }
     }
     class Program
@@ -41,14 +52,14 @@ namespace usuarios
         static void IngresarDatosDB()
         {
             Console.Title = "DB Usuarios > Generar Usuarios";
-            for(int i = 0; i < database.Length; i++)
+            for(int i = 0; i < database.GetLength(0); i++)
             {
                 Usuario base_usuario = new Usuario();
                 Console.WriteLine("|----------------------------------------|");
                 BadUsuario:
                 Console.Write("[#{0}] Ingrese el usuario: ", i);
                 base_usuario.usuario = Console.ReadLine();
-                if(BuscarUsuario(2, base_usuario.usuario) != -1)
+                if(BuscarUsuario(2, base_usuario.usuario, i) != -1)
                 {
                     Console.WriteLine("ERROR: ESE USUARIO YA EXISTE.");
                     goto BadUsuario;
@@ -83,7 +94,7 @@ namespace usuarios
         */
         static void Continuar(bool del = false)
         {
-            Console.Write("Ingrese cualquier tecla para continuar: ");
+            Console.Write("\nIngrese cualquier tecla para continuar: ");
             Console.ReadKey();
             if(del)
                 Console.Clear();
@@ -123,6 +134,7 @@ namespace usuarios
                     ModificarUsuario();
                     goto BackMenu;
                 case 4:
+                    BorrarUsuario();
                     goto BackMenu;
                 case 5:
                     Environment.Exit(1);
@@ -188,7 +200,7 @@ namespace usuarios
                 Console.WriteLine("|----------------------------------------------------|");
                 Console.WriteLine("| ID         {0}", database[i].id);
                 Console.WriteLine("| Usuario    {0}", database[i].usuario);
-                Console.WriteLine("| Nombre     {0} {1} {3}", database[i].usuario, database[i].nombres, database[i].apellido_p, database[i].apellido_m);
+                Console.WriteLine("| Nombre     {0} {1} {2}", database[i].nombres, database[i].apellido_p, database[i].apellido_m);
                 Console.WriteLine("| Edad       {0} años", database[i].edad);
                 Console.WriteLine("|----------------------------------------------------|");
                 return true;
@@ -204,7 +216,7 @@ namespace usuarios
                 Console.WriteLine("|----------------------------------------------------|");
                 Console.WriteLine("| ID         {0}", database[i].id);
                 Console.WriteLine("| Usuario    {0}", database[i].usuario);
-                Console.WriteLine("| Nombre     {0} {1} {3}", database[i].usuario, database[i].nombres, database[i].apellido_p, database[i].apellido_m);
+                Console.WriteLine("| Nombre     {0} {1} {2}", database[i].nombres, database[i].apellido_p, database[i].apellido_m);
                 Console.WriteLine("| Edad       {0} años", database[i].edad);
                 Console.WriteLine("|----------------------------------------------------|");
                 return true;
@@ -223,12 +235,17 @@ namespace usuarios
          *            string dato:    El dato a buscar.
          *
         */
-        static int BuscarUsuario(int tipo, string dato)
+        static int BuscarUsuario(int tipo, string dato, int len = -1)
         {
-            for(int i = 0; i < database.Length; i++)
-            {
-                if ((tipo == 1 && database[i].id.ToLower().Contains(dato.ToLower()) == true) ||
-                    (tipo == 2 && database[i].usuario.ToLower().Contains(dato.ToLower()) == true))
+            if(len == -1)
+                len = database.GetLength(0);
+            for(int i = 0; i < len; i++) {
+                if (
+                    (tipo == 1 && database[i].id.ToLower().Contains(dato.ToLower()) == true) ||
+                    (tipo == 2 && database[i].usuario.ToLower().Contains(dato.ToLower()) == true) ||
+                    (tipo == 3 && database[i].id.ToLower() == dato.ToLower()) ||
+                    (tipo == 4 && database[i].usuario.ToLower() == dato.ToLower())
+                    )
                     return i;
             }
             return -1;
@@ -262,15 +279,17 @@ namespace usuarios
             base_usuario.apellido_m = Console.ReadLine();
             Console.Write("Ingrese la edad: ");
             base_usuario.edad = int.Parse(Console.ReadLine());
-            // Respalda la base de datos
-            Usuario[] backup = database;
             // Guarda la cantidad de usuarios registrados
-            int len = backup.Length;
-            // Genera de nuevo la variable database con un nuevo tamaño (Recordar que len es el tamaño +1, porque empieza de 0 un array)
-            database = new Usuario[len];
+            int len = database.GetLength(0);
+            // Respalda la base de datos
+            Usuario[] backup = new Usuario[len+1];
+            for(int i = 0; i < len; i++)
+                backup[i] = (Usuario)database[i].Clone();
+            // Genera de nuevo la variable database con un nuevo tamaño
+            database = new Usuario[len+1];
             // Guarda la base de datos de acuerdo al respaldo
             for(int i = 0; i < len; i++)
-                database[i] = backup[i];
+                database[i] = (Usuario)backup[i].Clone();
             // Agrega al final el nuevo usuario
             database[len] = base_usuario;
             Console.WriteLine("\n Usuario '{0}' se ha generado con el ID: {1}", base_usuario.usuario, base_usuario.id);
@@ -336,20 +355,88 @@ namespace usuarios
             BadDato:
             Console.Write("Ingrese el dato a modificar: ");
             string dato = Console.ReadLine();
-            if(typeof(Usuario).GetProperty(dato) != null)
+            if(!string.IsNullOrEmpty((string)database[i][dato]))
             {
-                Type t = database[i].GetType();
-                PropertyInfo p = t.GetProperty(dato);
-                string antes = (string)p.GetValue(database[i], null);
+                string antes = (string)database[i][dato];
                 Console.WriteLine("Ingrese el nuevo valor del dato {0} (original '{1}'): ", dato, antes);
                 string despues = Console.ReadLine();
-                p.SetValue(database[i], despues);
+                database[i][dato] = despues;
                 Console.WriteLine("Cambio realizado del dato {0}:\n{1} >>> {2}", dato, antes, despues);
             }
             else
             {
                 Console.WriteLine("ERROR: DATO DE DB DE USUARIO INCORRECTO!");
                 goto BadDato;
+            }
+            Continuar(true);
+        }
+		/*
+		 * Procedimiento BorrarUsuario()
+         *
+         * Borra un usuario de la base de datos.
+         *
+		*/
+        static void BorrarUsuario()
+        {
+            Console.Title = "DB Usuarios > Borrar usuario";
+            // Referencia para salto de codigo
+            BackMenu:
+            Console.WriteLine("|--------------------------------------|");
+            Console.WriteLine("|-          MENU DE OPCIONES          -|");
+            Console.WriteLine("|-    Ingrese el tipo de búsqueda:    -|");
+            Console.WriteLine("|--------------------------------------|");
+            Console.WriteLine("| 1.- Buscar por ID                   -|");
+            Console.WriteLine("| 2.- Buscar por Usuario              -|");
+            Console.WriteLine("| 3.- Regresar                        -|");
+            Console.WriteLine("|--------------------------------------|");
+            int opcion = int.Parse(Console.ReadLine());
+            int i = 0;
+            Console.Clear();
+            switch(opcion)
+            {
+                case 1:
+                    Console.Write("Ingrese el id: ");
+                    string id = Console.ReadLine();
+                    i = BuscarUsuario(1, id);
+                    if(i != -1)
+                        break;
+                    else
+                    {
+                        Console.Clear();
+                        Console.WriteLine("No se encontro resultados.");
+                        goto BackMenu;
+                    }
+                case 2:
+                    Console.Write("Ingrese el usuario: ");
+                    string usuario = Console.ReadLine();
+                    i = BuscarUsuario(2, usuario);
+                    if(i != -1)
+                        break;
+                    else
+                    {
+                        Console.Clear();
+                        Console.WriteLine("No se encontro resultados.");
+                        goto BackMenu;
+                    }
+                case 3: break;
+                default:
+                    Console.Clear();
+                    Console.WriteLine("Opción invalida.");
+                    goto BackMenu;
+            }
+
+            Console.Write("¿Esta seguro que desea borrar al usuario {0}? (Si - No)", database[i].usuario);
+            if(Console.ReadLine().ToLower() == "si") {
+                // Respalda la base de datos
+                Usuario[] backup = database;
+                // Guarda la cantidad de usuarios registrados
+                int len = backup.GetLength(0)-1;
+                // Genera de nuevo la variable database con un nuevo tamaño (Recordar que len es el tamaño +1, porque empieza de 0 un array)
+                database = new Usuario[len];
+                // Guarda la base de datos de acuerdo al respaldo, ignorando la que se va a borrar
+                for(int z = 0; z < len; z++)
+                    if(z != i)
+                        database[i] = backup[i];
             }
             Continuar(true);
         }
