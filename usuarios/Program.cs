@@ -56,6 +56,7 @@ namespace usuarios
                 base_usuario.apellido_m = Console.ReadLine();
                 Console.Write("[#{0}] Ingrese la edad: ", i);
                 base_usuario.edad = int.Parse(Console.ReadLine());
+                database[i] = base_usuario;
                 Console.WriteLine("\n Usuario [#{0}] '{1}' se ha generado con el ID: {2}", i, base_usuario.usuario, base_usuario.id);
                 Console.WriteLine("|----------------------------------------|");
             }
