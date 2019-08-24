@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 
 namespace usuarios
 {
@@ -95,9 +96,9 @@ namespace usuarios
 		*/
         static void MenuOpciones()
         {
-            Console.Title = "DB Usuarios > Inicio";
             // Referencia para salto de codigo
             BackMenu:
+            Console.Title = "DB Usuarios > Inicio";
             Console.WriteLine("|--------------------------------------|");
             Console.WriteLine("|-          MENU DE OPCIONES          -|");
             Console.WriteLine("|-         Ingrese una opción         -|");
@@ -119,6 +120,7 @@ namespace usuarios
                     CrearUsuario();
                     goto BackMenu;
                 case 3:
+                    ModificarUsuario();
                     goto BackMenu;
                 case 4:
                     goto BackMenu;
@@ -150,6 +152,7 @@ namespace usuarios
             Console.WriteLine("| 3.- Regresar                        -|");
             Console.WriteLine("|--------------------------------------|");
             int opcion = int.Parse(Console.ReadLine());
+            Console.Clear();
             switch(opcion)
             {
                 case 1:
@@ -157,7 +160,6 @@ namespace usuarios
                         break;
                     else
                     {
-                        Console.Clear();
                         Console.WriteLine("No se encontro resultados.");
                         goto BackMenu;
                     }
@@ -166,20 +168,17 @@ namespace usuarios
                         break;
                     else
                     {
-                        Console.Clear();
                         Console.WriteLine("No se encontro resultados.");
                         goto BackMenu;
                     }
                 case 3: break;
                 default:
-                    Console.Clear();
                     Console.WriteLine("Opción invalida.");
                     goto BackMenu;
             }
             // Funciones locales
             bool BuscarPorID()
             {
-                Console.Clear();
                 Console.Write("Ingrese el ID: ");
                 string id = Console.ReadLine();
                 int i = BuscarUsuario(1, id);
@@ -196,7 +195,6 @@ namespace usuarios
             }
             bool BuscarPorUsuario()
             {
-                Console.Clear();
                 Console.Write("Ingrese el usuario: ");
                 string usuario = Console.ReadLine();
                 int i = BuscarUsuario(2, usuario);
@@ -277,6 +275,82 @@ namespace usuarios
             database[len] = base_usuario;
             Console.WriteLine("\n Usuario '{0}' se ha generado con el ID: {1}", base_usuario.usuario, base_usuario.id);
             Console.WriteLine("|----------------------------------------|");
+            Continuar(true);
+        }
+		/*
+		 * Procedimiento ModificarUsuario()
+         *
+         * Modifica los datos de un usuario
+         *
+		*/
+        static void ModificarUsuario()
+        {
+            Console.Title = "DB Usuarios > Crear modificar usuario";
+            // Referencia para salto de codigo
+            BackMenu:
+            Console.WriteLine("|--------------------------------------|");
+            Console.WriteLine("|-          MENU DE OPCIONES          -|");
+            Console.WriteLine("|-    Ingrese el tipo de búsqueda:    -|");
+            Console.WriteLine("|--------------------------------------|");
+            Console.WriteLine("| 1.- Buscar por ID                   -|");
+            Console.WriteLine("| 2.- Buscar por Usuario              -|");
+            Console.WriteLine("| 3.- Regresar                        -|");
+            Console.WriteLine("|--------------------------------------|");
+            int opcion = int.Parse(Console.ReadLine());
+            int i = 0;
+            Console.Clear();
+            switch(opcion)
+            {
+                case 1:
+                    Console.Write("Ingrese el id: ");
+                    string id = Console.ReadLine();
+                    i = BuscarUsuario(1, id);
+                    if(i != -1)
+                        break;
+                    else
+                    {
+                        Console.Clear();
+                        Console.WriteLine("No se encontro resultados.");
+                        goto BackMenu;
+                    }
+                case 2:
+                    Console.Write("Ingrese el usuario: ");
+                    string usuario = Console.ReadLine();
+                    i = BuscarUsuario(2, usuario);
+                    if(i != -1)
+                        break;
+                    else
+                    {
+                        Console.Clear();
+                        Console.WriteLine("No se encontro resultados.");
+                        goto BackMenu;
+                    }
+                case 3: break;
+                default:
+                    Console.Clear();
+                    Console.WriteLine("Opción invalida.");
+                    goto BackMenu;
+            }
+
+            Console.WriteLine("USUARIO ENCONTRADO!");
+            BadDato:
+            Console.Write("Ingrese el dato a modificar: ");
+            string dato = Console.ReadLine();
+            if(typeof(Usuario).GetProperty(dato) != null)
+            {
+                Type t = database[i].GetType();
+                PropertyInfo p = t.GetProperty(dato);
+                string antes = (string)p.GetValue(database[i], null);
+                Console.WriteLine("Ingrese el nuevo valor del dato {0} (original '{1}'): ", dato, antes);
+                string despues = Console.ReadLine();
+                p.SetValue(database[i], despues);
+                Console.WriteLine("Cambio realizado del dato {0}:\n{1} >>> {2}", dato, antes, despues);
+            }
+            else
+            {
+                Console.WriteLine("ERROR: DATO DE DB DE USUARIO INCORRECTO!");
+                goto BadDato;
+            }
             Continuar(true);
         }
     }
