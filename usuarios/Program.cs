@@ -44,8 +44,14 @@ namespace usuarios
             {
                 Usuario base_usuario = new Usuario();
                 Console.WriteLine("|----------------------------------------|");
+                BadUsuario:
                 Console.Write("[#{0}] Ingrese el usuario: ", i);
                 base_usuario.usuario = Console.ReadLine();
+                if(BuscarUsuario(2, base_usuario.usuario) != -1)
+                {
+                    Console.WriteLine("ERROR: ESE USUARIO YA EXISTE.");
+                    goto BadUsuario;
+                }
                 Console.Write("[#{0}] Ingrese la contraseña: ", i);
                 base_usuario.clave = Console.ReadLine();
                 Console.Write("[#{0}] Ingrese los nombres: ", i);
