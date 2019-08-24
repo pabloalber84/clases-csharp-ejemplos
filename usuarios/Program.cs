@@ -427,16 +427,19 @@ namespace usuarios
 
             Console.Write("¿Esta seguro que desea borrar al usuario {0}? (Si - No)", database[i].usuario);
             if(Console.ReadLine().ToLower() == "si") {
-                // Respalda la base de datos
-                Usuario[] backup = database;
                 // Guarda la cantidad de usuarios registrados
-                int len = backup.GetLength(0)-1;
-                // Genera de nuevo la variable database con un nuevo tamaño (Recordar que len es el tamaño +1, porque empieza de 0 un array)
-                database = new Usuario[len];
-                // Guarda la base de datos de acuerdo al respaldo, ignorando la que se va a borrar
+                int len = database.GetLength(0);
+                // Respalda la base de datos
+                Usuario[] backup = new Usuario[len];
+                for(int z = 0; z < len; z++)
+                    backup[z] = (Usuario)database[z].Clone();
+                // Genera de nuevo la variable database con un nuevo tamaño
+                database = new Usuario[len-1];
+                // Guarda la base de datos de acuerdo al respaldo e ignorando el eliminado
                 for(int z = 0; z < len; z++)
                     if(z != i)
-                        database[i] = backup[i];
+                        database[z] = (Usuario)backup[z].Clone();
+                Console.WriteLine("Usuario Eliminado!");
             }
             Continuar(true);
         }
