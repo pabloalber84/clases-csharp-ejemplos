@@ -18,6 +18,13 @@ namespace bici
 		public void print() {
 			Console.WriteLine("Modelo: {0}\nVelocidad: {1}", model, current_velocity);
 		}
+		public static Bici operator ++(int cv) {
+			if(cv > velocities)
+				current_velocity = velocities;
+			else
+				current_velocity = cv;
+			return current_velocity;
+		}
 	}
 	class Program
 	{
