@@ -18,12 +18,14 @@ namespace bici
 		public void print() {
 			Console.WriteLine("Modelo: {0}\nVelocidad: {1}", model, current_velocity);
 		}
-		public static Bici operator ++(int cv) {
-			if(cv > velocities)
-				current_velocity = velocities;
+		public static Bici operator ++(Bici obj) {
+			// ++ a la izquierda para que retorne el valor aumentado, no es o mismo "c = c++" a "c = ++c"
+			int cv = ++obj.current_velocity;
+			if(cv > obj.velocities)
+				obj.current_velocity = obj.velocities;
 			else
-				current_velocity = cv;
-			return current_velocity;
+				obj.current_velocity = cv;
+			return obj;
 		}
 	}
 	class Program
@@ -32,6 +34,7 @@ namespace bici
 		{
 			Bici bici = new Bici();
 			bici.init("BMX", 50, 49);
+			bici++;
 			bici.print();
 		}
 	}
