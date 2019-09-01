@@ -23,7 +23,9 @@ namespace bici
 	{
 		static void Main(string[] args)
 		{
-			Console.WriteLine("Hello World!");
+			Bici bici = new Bici();
+			bici.init("BMX", 50, 49);
+			bici.print();
 		}
 	}
 }
